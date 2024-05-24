@@ -55,17 +55,25 @@ JOIN
 SELECT * FROM customer_summary_report;
 -- Next, using the CTE, create the query to generate the final customer summary report, which should include: customer name, email, rental_count, total_paid and average_payment_per_rental, 
 -- this last column is a derived column from total_paid and rental_count.
-CREATE TABLE customer_summary_report_1 AS
+WITH customer_summary_cte AS (
+    SELECT
+        crs.name,
+        crs.email,
+        crs.rental_count,
+        tcp.total_paid
+    FROM
+        customer_rental_summary crs
+    JOIN
+        temp_customer_payments tcp ON crs.customer_id = tcp.customer_id
+)
 SELECT
-    cps.name,
-    cps.email,
-    cps.rental_count,
-    cps.total_paid,
-    cps.average_payment_per_rental
+    name,
+    email,
+    rental_count,
+    total_paid,
+    CASE WHEN rental_count > 0 THEN total_paid/rental_count ELSE 0 END AS average_payment_per_rental
 FROM
-    customer_summary_report cps;
-
-SELECT * FROM customer_summary_report_1;
+    customer_summary_cte;
 
 
 
